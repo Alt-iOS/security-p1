@@ -23,7 +23,7 @@ with open("NDA.pdf", "rb") as f:
     pdf_bytes = f.read()
     pdf_hash = int.from_bytes(hashlib.sha256(pdf_bytes).digest(), "big")
 signature = pow(pdf_hash, dA, nA)
-
+print("Hash de alice: ", pdf_hash)
 # Convertimes la firma a bytes
 signature_bytes = signature.to_bytes((signature.bit_length() + 7) // 8, byteorder="big")
 
@@ -33,19 +33,20 @@ with open("NDA.pdf", "ab") as f:
 
 # checamos los ultimos 256 bytes
 signature_bytes_from_pdf_AC = read_last_bytes("NDA.pdf", 256)
-#los convertimos a int
-signature_int_from_pdf_AC = int.from_bytes(signature_bytes_from_pdf_AC, byteorder='big')
+# los convertimos a int
+signature_int_from_pdf_AC = int.from_bytes(signature_bytes_from_pdf_AC, byteorder="big")
 
 # restamos la firma del archivo
 with open("NDA.pdf", "rb") as f:
     pdf_bytes_AC = f.read()[:-256]
     pdf_hash_AC = int.from_bytes(hashlib.sha256(pdf_bytes_AC).digest(), "big")
 
+print("Hash de AC:", pdf_hash_AC)
 # Verificación por AC con la publica de Alice
 sig_verif_AC = pow(signature_int_from_pdf_AC, e, nA)
 print("Firma verificada por AC:", sig_verif_AC == pdf_hash_AC)
 
-#una vez esta verificado, removemos la firma del archivo
+# una vez esta verificado, removemos la firma del archivo
 with open("NDA.pdf", "wb") as f:
     f.write(pdf_bytes_AC)
 
@@ -62,20 +63,23 @@ signature_ac = pow(pdf_hash_AC, dAC, nAC)
 
 # Agregamos la firma de AC al final del archivo
 signature_ac_bytes = signature_ac.to_bytes(
-    (signature_ac.bit_length() + 7) // 8, byteorder="big")
+    (signature_ac.bit_length() + 7) // 8, byteorder="big"
+)
 with open("NDA.pdf", "ab") as f:
     f.write(signature_ac_bytes)
 
 # Verificación por Bob
 # checamos los ultimos 256 bytes
 signature_bytes_from_pdf_BOB = read_last_bytes("NDA.pdf", 256)
-#los convertimos a int
-signature_int_from_pdf_BOB = int.from_bytes(signature_bytes_from_pdf_BOB, byteorder='big')
+# los convertimos a int
+signature_int_from_pdf_BOB = int.from_bytes(
+    signature_bytes_from_pdf_BOB, byteorder="big"
+)
 
 # restamos la firma del archivo
 with open("NDA.pdf", "rb") as f:
     pdf_bytes_BOB = f.read()[:-256]
     pdf_hash_BOB = int.from_bytes(hashlib.sha256(pdf_bytes_BOB).digest(), "big")
-
+print("Hash de Bob:", pdf_hash_BOB)
 pdf_hash_verif_bob = pow(signature_ac, eAC, nAC)
 print("Firma verificada por Bob:", pdf_hash_verif_bob == pdf_hash_AC)
